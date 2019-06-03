@@ -2,49 +2,109 @@
   <section>
     <div class="nine-box">
       <ul class="box-list">
-        <li class="box-item" data-box-index=0>1</li>
-        <li class="box-item">2</li>
-        <li class="box-item">3</li>
-        <li class="box-item">4</li>
-        <li class="box-item" @click="start">5</li>
-        <li class="box-item">6</li>
-        <li class="box-item">7</li>
-        <li class="box-item">8</li>
-        <li class="box-item">9</li>
+        <template v-for="(item, index) in prizeList">
+          <li class="box-item" 
+            v-if="index !== 4"
+            :key="index"
+            :data-prize-id="item.id"
+          >{{item.prizeName}}</li>
+          <li class="box-item"
+            v-else
+            :key="index"
+            @click="lottery"
+          >抽奖</li>
+        </template>
       </ul>
     </div>
   </section>
 </template>
 
 <script>
+  import NineBoxLottery from './js/nine-box-lottery.js'
   export default {
     name: 'nine-box',
+    data () {
+      return {
+        prizeList: []
+      }
+    },
+    created () {
+      this.fetchPrizeInfo()
+    },
     methods: {
-      start () {
-        let orders = [0, 1, 2, 5, 8, 7, 6, 3]
-        let result = Math.floor(Math.random() * 8)
-        console.log('result:', result)
-        if (orders.indexOf(result) === -1) {
-          alert('系统错误')
-          return
-        }
-        let boxItems = document.querySelectorAll('.box-item')
-        let counter = 0
-        let preIndex = 0
-        let step = function () {
-          let index = orders[counter % orders.length]
-
-          if (preIndex !== index) {
-            boxItems[preIndex].style.border = ''
+      fetchPrizeInfo () {
+        let res = [
+          {
+            id: 1,
+            prizeName: '手表'
+          },
+          {
+            id: 2,
+            prizeName: 'iPhone6'
+          },
+          {
+            id: 3,
+            prizeName: 'iPhone7'
+          },
+          {
+            id: 4,
+            prizeName: 'iPhone8'
+          },
+          {
+            id: 5,
+            prizeName: 'iPhoneX'
+          },
+          {
+            id: 6,
+            prizeName: 'iPhoneXR'
+          },
+          {
+            id: 7,
+            prizeName: 'iPhoneMax'
+          },
+          {
+            id: 8,
+            prizeName: 'Mac 256'
           }
+        ]
+        res.splice(4, 0, {})
+        this.prizeList = res
+      },
+      lottery: (function () {
+        let orders = [0, 1, 2, 5, 8, 7, 6, 3]
+        let index = 0
+        let status = false
+        let times = 0
+        let start = function () {
+          if (status) {
+            return
+          }
+          status = true
+          times = 0
+          let result = Math.floor(Math.random() * 8)
+          console.log(this.prizeList)
+          let boxItems = document.querySelectorAll('.box-item')
+          let preIndex = 0
+          let step = () => {
+            let index = orders[times % orders.length]
 
-          boxItems[index].style.border = '1px solid blue'
-          counter++
-          preIndex = index
+            if (preIndex !== index) {
+              boxItems[preIndex].style.border = ''
+            }
+            boxItems[index].style.border = '1px solid blue'
+            if (times > 30 && boxItems[index].getAttribute('data-prize-id') == this.prizeList[result].id) {
+              alert('success')
+              return
+            }
+            console.log('aaa')
+            preIndex = index
+            times++
+            setTimeout(step, 500)
+          }
           setTimeout(step, 500)
         }
-        setTimeout(step, 500)
-      }
+        return start
+      })()
     }
   }
 </script>
